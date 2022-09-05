@@ -30,7 +30,6 @@
  */
 $(document).ready(function () {
   getTodos();
-
   addEvents();
 });
 
@@ -38,16 +37,46 @@ function getTodos() {
   $.ajax({
     url: "http://127.0.0.1:3000/getTodos",
     success: function (response) {
-      /*****
-       * ['안녕하세요', '안녕하세요1', '안녕하세요2']
+      /**
+       * response => 배열
+       * 1. 반복문 돌리면서 append , prepend
        */
+      for (let i = 0; i < response.length; i++) {
+        const todo = response[i];
+
+        let html = `<li>
+        <span>${todo}</span>
+        <button type='button' onclick='deleteTodo(event);'>삭제</button>
+        <button type='button' onclick='showUpdateInput(event)'>수정</button>
+        </li>`;
+
+        $("#todo-update-form > ul").append(html);
+      }
     },
   });
 }
 
+/**
+ * ================= CLEAR 삭제 요청 보낼떄 =================
+ * 1. ajax 서버랑 통신
+ * - url 설정 , node.js
+ * 2. 그냥 다삭제 해버리기 !
+ *
+ * ================= 서버에 삭제 요청 보낼떄 =================
+ * 1. ajax 서버랑 통신
+ * - url 설정 , node.js
+ * 2. index 알아내기 그다음 서버에 보내주기 [힌트 : 서버에서 unshift로 변경!]
+ * 3. index에 맞는 값 삭제 !! (javascript 배열 특정 값 삭제)
+ */
 function deleteTodo(event) {
   const target = $(event.target);
-  target.parent().remove();
+  const index = target.parent().index();
+
+  $.ajax({
+    url: `http://127.0.0.1:3000/delete?index=${index}`,
+  });
+
+  // target.parent().remove();
 }
 
 function showUpdateInput(event) {
@@ -122,10 +151,14 @@ function addEvents() {
     });
   });
 
+  /**
+   * 전체삭제
+   */
   $("form > div > button").on("click", function () {
-    /**
-     * empty()
-     */
+    $.ajax({
+      url: "http://127.0.0.1:3000/deleteTodo",
+    });
+
     $("form > ul").empty();
   });
 
